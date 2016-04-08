@@ -1,0 +1,4 @@
+DataDir=/var/www/roctave
+CGIDir=/var/www/cgi-bin/roctave
+TimeInactive=3600
+SizeLimit=5000

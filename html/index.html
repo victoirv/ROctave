@@ -1,0 +1,193 @@
+<html>
+  <head>
+    <title>Remote Octave</title>
+    <script src="codemirror.js"></script>
+    <link rel="stylesheet" href="codemirror.css">
+    <script src="octave.js"></script>
+    <link rel="stylesheet" href="octave.css">
+    <link href="roctave.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript"
+      src=" https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"> </script>
+<!--    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+-->
+    <script type="text/javascript" src="roctave.js"> </script>
+    <script type="text/javascript" src="jquery.activity-indicator-1.0.0.js"></script>
+    <script type="text/javascript">
+      window.onload=roctave;
+    </script>
+  </head>
+
+  <body>
+    <table width="100%">
+      <tr>
+	<td width="10px">
+	<div class="expandmain" id="expandmainm">-</div>
+	<div class="expandmain" style="display: none" id="expandmainp">+</div>
+	</td><td>
+	 <div style="border-top: 5px solid #0790C0;" class="expandmain"></div>
+	</td>
+      </tr>
+    </table>
+
+    <div class="main">
+      <h1>ROctave</h1>
+      <p>ROctave (Remote Octave) is a browser-based interface to <a
+	href="http://octave.org/">GNU Octave</a> that was developed to
+      facilitate teaching MATLAB syntax to first-time computer programmers.
+      The interface allows instructors and students to easily view, share, and
+      comment on short MATLAB programs. To learn how to use the ROctave
+      interface, see <a href="http://roctave.org/tutorial">tutorial</a>; for
+      more information about the project, see <a href="http://aurora.gmu.edu/projects/index.php?title=ROctave">about</a>.</p>
+
+      <table width="100%">
+	<tr>
+
+	  <td width="50%" style="border-right: 3px solid #0790C0">
+	    <h2>New session</h2>
+	    <form action="/cgi-bin/roctave/spawn.cgi" method="post" id="spawn">
+	      <table>
+
+		<tr>
+		  <td width="50%" align="right">Session Name (optional):</td>
+		  <td><textarea rows="1" cols="15" id="sessionname"
+		      name="Session"></textarea></td>
+		</tr>
+
+		<tr>
+		  <td align="right">User Name (optional):</td>
+		  <td><textarea rows="1" cols="15" id="username" name="UserName"></textarea>
+		  </td>
+		</tr>
+
+		<tr>
+		  <td></td>
+		  <td title="Session ID is not shown in the public session list. " ><input type="checkbox" name="Private" id="PrivateCheck"
+		    value="1"> <label for="PrivateCheck">Unlisted session </label>
+		</td></tr>
+		<tr><td></td><td><input type="submit"
+		    value="Start session" class="button"/> <br />
+		  </td>
+		</tr>
+
+	      </table>
+	    </form>
+	  </td>
+
+	  <td valign="top" style="padding-left: 1em">
+
+	    <h2>Public sessions</h2>
+	    <div id="publicdropdiv"></div>
+	  </td>
+
+	</tr>
+
+      </table>
+
+      <br />
+      <div style="border-bottom: 5px solid #0790C0;"></div>
+      <br />
+    </div>
+
+    <div id="session" class="run">
+
+      <i>Session ID: </i><span id="sessionid"></span> | 
+      <a href="" id="datadir">Session Data</a> | 
+      <span id="histdroplink">History</span> | 
+      <span id="keydroplink">Keyboard</span> |
+      <span id="prevfigdroplink">Previous Figures</span> |
+	      <span id="dropper">Special commands</span>
+	      <ul class="dropmenu">
+	      <li>
+	      <form onsubmit="$('#AskForPass').show(); return false;">
+	      <input type="submit" class="drop" value="Lock Session">
+	      </form>
+	      </li>
+
+	 	<li>
+		<form action="JavaScript:Clone();" method="post">
+		<input type="submit" class="drop button" value="Clone Session" title="Clone this session into new session">
+		</form>
+		</li>
+
+	      <li>
+	      <form action="JavaScript:ReadySubmit('close');" method="post" id="clearform">
+		<input type="hidden" name="command" value="close all; clear all;"> 
+		<input type="submit" name="clean" class="drop button" value="close all; clear all" title="Close all figures and delete workspace variables.">
+	      </form>
+	      </li>
+
+	      <li>
+	      <form action="/cgi-bin/roctave/clear.cgi" method="post">
+		<input type="hidden" name="ClearPath" id="ClearPath" value="">
+		<input type="submit" value="Close Session" class="drop button" title="Saves images, history, and workspace variables to disk and closes Octave session.">
+	      </form>
+	      </li>
+
+	      </ul>
+
+
+
+
+      <div id="histdrop">
+	<div id="histclose">X</div>
+	<div class="history"></div>
+      </div>
+
+      <div id="keydrop">
+	<div id="keyclose">X</div>
+	<div id="keyboard">
+	  Tab - Indent line or selection<br><br>
+	  Shift+Enter - Submit command<br><br>
+	  Ctrl+Click in history - Append command(s)<br><br>
+	  Ctrl+C - Abort command execution<br><br>
+	</div>
+      </div>
+
+      <div id="prevfigdrop">
+	<div id="prevfigclose">X</div>
+	<div id="figlist"></div>
+      </div>
+
+
+      <form action="JavaScript:ReadySubmit('submit');" method="post" class="submitform">
+	<textarea id="input" name="command" style="width:800px" rows="5"></textarea>
+	<table width="800px">
+	  <tr>
+	    <td>
+
+	      <input type="submit" id="submitbutton" class="button" value="Submit Commands" title="Submit commands to Octave"/>
+	    </form>
+	  </td>
+	  <td>
+	    <div id="loadspinner"></div>
+	  </td>
+	  <td>
+	    <div id="AskForPass">
+	    Password: <input type="password" id="password" name="password" style="width:120px" rows="1"></input>
+	    </div>
+	    <td align="right">
+	    </td>
+
+	  </tr>
+
+	</table>
+
+	<div id="warnings"></div>
+	<div id="errors"></div>
+
+	<div id="inoutdiv"></div>
+
+	<div id="afig"></div>
+
+	<div class="info">
+
+	  <div class="figures"></div>
+	  <br><br>
+
+	  <div id="popup"><img src="#" class="popupim"></div>
+
+	</div>
+      </div>
+
+    </body>
+  </html>

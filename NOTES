@@ -1,0 +1,106 @@
+TODO
+* Expand preprocessor to catch more syntax errors
+* Expand jquery post-processor of error message into cgi/wiki pair
+* Refine tool to view history of all students on one page
+* Disk space limit using setrlimit or http://serverfault.com/questions/100596/linux-quota-per-directory. Also possible: creating a user for each session and using user quotas
+* Write script to stress test system
+* Somehow fix firefox's tendancy to try to save images as the cgi file
+* Tutorial drop down menu (add full tutorial text to textbox?)
+
+#######
+#June 13, 2011
+######
+Some research into profiling has provided the following ideas:
+*Octave is much faster at printing eps files than png
+*Printing an eps and converting it to png with imgconvert is faster than printing a png
+*The speed of conversion in gs is mostly determined by the graphicsalphabits variable (1 being half the speed of 2, but 2 being nearly the same as 4 where it levels out)
+*A low resolution version can be converted quickly while loading the high resolution version in the background
+
+########
+#May 30, 2011
+#######
+The interface has been overhauled. Everything runs on the index page and is operated with jquery submitting post/get commands to the relevant (f)cgi files. One important note: it seems that if the fcgi file doesn't print some sort of return value (even just the Content-Type header), the server will loop the request (and resubmit the command)  a number of a times. 
+
+########
+#May 12, 2011
+########
+Added a drop-down menu for changing sessions and support for usernames alongside a session ID. There are now also archives that contain the figures as well as the associated history file. A cleanup function was added to clear the figures and workspace (and archive the figures and history). One important note here: since they run system() calls to move files around, any potential output must be surpressed otherwise it kills the fcgi headers. mkdir -p and mv --backup both seem to do this inherently.
+
+#########
+#March 4, 2011
+#########
+Apache now spawns new instances for every user by copying a template process and redirecting the user to that program. This takes up space, but nicely keeps everything segregated and allows fcgi to keep a running instance of the program with its native capabilities. Locks, history, and attaching to processes have been implemented. Figures are also in, but only one per command submitted. The side effects of attempting a "hold on" are untested.
+
+Also, the apache fcgid configuration file (/etc/apache2/mods-enabled/fcgid.conf) has been edited to remove a bug where a computation timed out after 40 seconds. The variable that sets how long before it times out is:
+BusyTimeout 10800 (Setting it for 3 hours)
+
+but it also seems that other values had to be added before it took hold. Namely, one or more of these:
+  IPCCommTimeout 10800
+  MaxRequestsPerProcess -1
+  ProcessLifeTime 10800
+
+I'll begin testing a process of elimination to see which are necessary and which aren't. One thing that has been tested, the ProcessLifeTime doesn't actually seem to kill the fcgi process after 3 hours, since a few test sessions have been running overnight (~16 hours) and are still up and retaining their variables from the previous night.
+
+The use of the program cpulimit to limit cpu usage has been tested and found to work, though what is perhaps an unexpected side effect has cropped up and will be investigated shortly. Telling it to limit a process to some arbitrary percentage of usage works as expected (as reported by the "top" command), but other processes created after that process has long since died still seem to be limited to the same amount of cpu usage (only tested twice, so could still be a coincidence).  
+
+One other thing that is to be looked into shortly is the limitation of memory usage so that no program can, say, create a 10^8 by 10^8 matrix and take up the memory without crossing its cpu limitations. This will likely be done with ulimit.
+
+
+#########
+#January 27, 2011
+#########
+Current goals:
+--Convert octave output to go straight to fcgi (still using dup2() but with a file descriptor that points straight to fcgi's output). Note: /proc/getpid(fcgi program)/fd/1 doesn't work, all output ends up in the apache error log. This will reduce the need to create a new file, read and write to it for each command.
+
+--Have apache spawn a new fcgi instance for every new user. Currently process distribution seems to be load based, not user based, but there may be support for it somewhere. Not sure if simple fork() or exec() commands will work. 
+Check here: 
+http://www.fastcgi.com/drupal/node/25
+
+
+
+
+#########
+#January 26, 2011
+#########
+Success is to be had at last. I ran across this page today:
+http://octave.1599824.n4.nabble.com/dup2-on-stdout-or-using-disp-on-another-file-stream-td1611884.html
+The OP comments on the usage of the function "dup2" to redirect an open file descriptor. Not sure how I missed that command before, but in what will become known as "official test case 19", octave now runs from one fcgi file and keeps a constant instance. Variables set in one submission stay submitted in another. The next step is to set up the code for individually contained instances (based on IP, cookies, something else?) and look into limiting usage via ulimits.
+
+
+#########
+#January 17, 2011
+#########
+Scratching the shared libraries idea. It sounds as if that won't allow the two files (the FCGI program and the non-FCGI program) to run with different definitions of stdout but the same running octave instance. 
+
+Instead I'm slowly (~3 hours per recompile) attempting to recompile octave without stdout hard-coded with no success as of yet. This seems to require taking out the cstdio libraries from a few octave parsing files. I attempted to do it to oct-parse.yy and oct-parse.cc but results still print to the apache error log. I'm not sure if there's a way to explicitly tell it to print to fast-cgi's stdout since that seems to be created when the program runs, so it's probably recompiling with the normal stdout anyway.
+
+Also looking into re-directing the stdout of the octave output to point to the FCGI program's stdout, as loosely outlined here: http://blog.ksplice.com/2011/01/solving-problems-with-proc/ 
+This may not get us back the ability to have octave called from the FCGI program though (needed to fix instance issues?), since then octave would still be running under the same PID which wouldn't work with this (as far as I know).
+
+
+#########
+#January 5, 2011
+#########
+Looking into using shared libraries and/or dlopen() as a method of loading libraries dynamically, then making the octave function calls run from a library that still uses stdout. 
+This ideally replicates the functionality of c-repl (http://neugierig.org/software/git/?url=c-repl/tree/README). 
+While it will compile, all attempts to run it have been plagued by vague apache errors that kill the process.
+I currently believe this may be due to the octave compiler (mkoctfile) not having an -fPIC compile option which seems necessary for shared libraries, but I've also had troubles getting octave files to compile with g++ instead of mkoctfile. My current goal is to find a way to bypass the mkoctfile command altogether.
+
+
+#########
+#December 20, 2010
+#########
+A number of attempts to solve the printing problem (octave printing 
+results to the apache error log instead of FCGI_stdout) are now
+documented in foctave_with_tests.cpp. The solution was eventually found
+to be running the fastcgi instance separately from the octave calls,
+piping the output to a file and reading it with the fastcgi program.
+At the moment, this suffers from requiring octave_main being in the same
+program as the octave calls, losing the ability of fastcgi to create 
+continuous instances for a user. Currently looking into the 
+documentation to find a solution.
+
+#########
+#December 9, 2010
+#########
+This file was created.

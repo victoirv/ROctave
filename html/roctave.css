@@ -1,0 +1,179 @@
+body {
+	width: 800px;
+	background: none;
+	font: normal 12px Arial, Helvetica, sans-serif;
+}
+
+
+div.main {
+	width: 800px;
+	margin-left: 0;
+	margin-right: auto;
+	text-align: left;
+}
+input { border: 2px solid #0790C0; background: white; color: #0790C0; font-weight:bold;}
+textarea {
+	border: 1px solid #0790C0;
+}
+div.main table {
+	font: normal 12px Arial, Helvetica, sans-serif;
+}
+
+form {display:inline; margin:0px; padding:0px;}
+
+h1,h2,h3 {
+	color: #0790C0;
+}
+
+div.run {
+	clear: left;
+	width: 800px;
+	padding-left: 0x;
+	float: left;
+	text-align: left;
+	overflow: visible;
+}
+
+div.info {
+	width: 800px;
+}
+
+div.history {
+	float: left;
+	width: 100%;
+	margin: auto;
+	text-align: left;
+	overflow: auto;
+}
+
+span.histitem {
+	text-decoration: underline;
+	cursor: pointer;
+	position:relative;
+	z-index:2;
+	font: 12px Arial,Helvetica,sans-serif;
+}
+
+pre.histpre {
+display:inline;
+}
+
+td.histblock {
+        width: 10px;
+        background:#cecece;
+	cursor:pointer;
+	position:relative;
+	z-index:2;
+}
+
+
+div#AskForPass {
+	display:none;
+}
+
+
+td {
+	border: transparent 1px solid;
+}
+
+
+.dropmenu {
+	list-style: none;
+	display: none;
+	position: absolute;
+	text-align: left;
+	left:610px;
+	z-index:3;
+}
+
+.dropmenu li {
+	padding:2px;
+}
+
+div.button {
+	width: 50px;
+	padding: 20px 20px 10px 20px;
+	float: left;
+	margin-left: auto;
+	text-align: center;
+	cursor:pointer;
+}
+
+div.button a:link {
+	text-decoration: none;
+	color: #000000;
+	font: normal 16px Arial, Helvetica, sans-serif;;
+}
+
+div.button a:hover {
+	border-bottom: 1px solid red;
+}
+
+div#afig {
+	float: left;
+	width:50%;
+	margin: auto;
+	text-align: left;
+	overflow: visible;
+}
+
+img.afigim {
+cursor:pointer;
+}
+
+
+div#inoutdiv {
+	float:left;
+	width:50%;
+}
+
+
+#popup {
+	display: none;
+	position: relative;
+	height: 620px;
+	width: 900px;
+	background: #FFFFFF;
+	z-index: 2;
+	padding: 2px;
+	border: 1px solid #cecece;
+}
+
+div.expandmain {
+cursor: pointer;
+}
+
+div#warnings, div#errors {
+display: none;
+background:#ff2424;
+
+}
+
+span#histdroplink, span#keydroplink, span#prevfigdroplink, #dropper{
+cursor:pointer;
+text-decoration: underline;
+}
+
+div#histdrop, div#keydrop, div#prevfigdrop {
+display:none;
+background:#FFFFFF;
+border:1px solid #cecece;
+min-height: 40px;
+max-height: 300px;
+overflow: auto;
+width: 250px;
+padding: 5px 5px;
+position: absolute;
+z-index: 2;
+}
+
+div#histclose, div#keyclose, div#prevfigclose {
+position: absolute;
+top:3px;
+right:3px;
+cursor:pointer;
+}
+
+input.button {
+cursor:pointer;
+}
