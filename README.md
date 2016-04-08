@@ -27,9 +27,9 @@ Installation (Ubuntu):
 
 Compile:
 * System variables (modify in makefile)
-..* Server root directory: /var/wwww 
-..* Cgi-bin directory: /var/www/cgi-bin
-..* Apache username: www-data
+  * Server root directory: /var/wwww 
+  * Cgi-bin directory: /var/www/cgi-bin
+  * Apache username: www-data
 * cd commandline-fcgi
 * make
 * sudo make install
